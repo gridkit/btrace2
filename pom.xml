@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>btrace-all</artifactId>
     <groupId>net.java.btrace</groupId>
-    <version>2.0-SNAPSHOT</version>
+    <version>2.0-nimble-1</version>
     <packaging>pom</packaging>
     <name>btrace-all</name>
     
@@ -27,6 +27,33 @@
         <url>http://kenai.com/projects/btrace/sources/hg/show</url>
     </scm>
     
+    <repositories>
+        <!-- GridKit maven2 repository -->
+        <repository>
+            <id>gridkit-releases</id>
+            <name>gridkit-repo.googlecode.com</name>
+            <url>http://gridkit.googlecode.com/svn/repo/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>gridkit-maven</id>
+            <url>https://subversion.assembla.com/svn/gridkit-maven/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+    
     <modules>
         <module>btrace-parent</module>
         <module>core</module>
@@ -42,30 +69,20 @@
         <module>samples</module>
         <module>agent</module>
         <module>boot</module>
+        <module>extensions</module>
         <module>extensions/default</module>
         <module>extensions/collections</module>
         <module>extensions/aggregations</module>
         <module>extensions/sys</module>
         <module>extensions/profiling</module>
         <module>extensions/export</module>
-        <module>dist</module>
+        <!--<module>dist</module>-->
     </modules>
     <distributionManagement>
-        <snapshotRepository>
-            <id>kenai.com</id>
-            <name>BTrace Snapshot Repository</name>
-            <url>dav:https://kenai.com/website/btrace/m2/snapshots/</url>
-        </snapshotRepository>
         <repository>
-            <id>kenai.com</id>
-            <name>BTrace Repository</name>
-            <url>dav:https://kenai.com/website/btrace/m2/release/</url>
+            <id>gridkit-repo.googlecode.com</id>
+            <url>svn:https://gridkit.googlecode.com/svn/repo/</url>
         </repository>
-        <site>
-            <id>kenai.com</id>
-            <name>BTrace Web</name>
-            <url>dav:https://kenai.com/website/btrace/site</url>
-        </site>
     </distributionManagement>
     
     <build>
@@ -133,5 +150,13 @@
                 </executions>                    
             </plugin>
         </plugins>
+        <extensions>
+            <extension>
+                <!-- Enables SVN repository access -->
+                <groupId>com.google.code.maven-svn-wagon</groupId>
+                <artifactId>maven-svn-wagon</artifactId>
+                <version>1.4</version>
+            </extension>
+        </extensions>
     </build>
 </project>
