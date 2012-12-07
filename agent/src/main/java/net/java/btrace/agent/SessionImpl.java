@@ -448,7 +448,8 @@ final public class SessionImpl extends Session implements ShutdownHandler {
                 cmd.setCause(th);
             }
         });
-        
+
+        /*
         BTraceLogger.debugPrint("sending exit command"); // NOI18N
         Response<Void> r = channel.sendCommand(ExitCommand.class, new AbstractCommand.Initializer<ExitCommand>() {
 
@@ -463,6 +464,7 @@ final public class SessionImpl extends Session implements ShutdownHandler {
             BTraceLogger.debugPrint(th);
             Thread.currentThread().interrupt();
         }
+        */
     }
 
     private static boolean isBTraceClass(String name) {

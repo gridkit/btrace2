@@ -108,7 +108,7 @@ public class Client {
         DTRACE_REF_DESC = Type.getDescriptor(DTraceRef.class);
     }
 
-    private static enum State {
+    protected static enum State {
 
         OFFLINE, ATTACHING, ATTACHED, SUBMITTING, RUNNING, EXITING
     }
@@ -135,7 +135,7 @@ public class Client {
     private Lookup commandCtx;
     final private ToolsJarLocator DEFAULT_TJ_LOCATOR;
     final private ExtensionsRepository DEFAULT_REPOSITORY;
-    final private AtomicReference<State> state = new AtomicReference<State>(State.OFFLINE);
+    final protected AtomicReference<State> state = new AtomicReference<State>(State.OFFLINE);
     final private ExecutorService commDispatcher = Executors.newSingleThreadExecutor(new ThreadFactory() {
 
         public Thread newThread(Runnable r) {
@@ -145,7 +145,7 @@ public class Client {
     private Channel channel = null;
     private ValueFormatter vFormatter = null;
 
-    private Client(final int pid) throws AttachNotSupportedException, IOException {
+    protected Client(final int pid) throws AttachNotSupportedException, IOException {
         this.pid = pid;
         BTraceLogger.debugPrint("Connecting client to " + pid);
 
@@ -465,7 +465,7 @@ public class Client {
                     throw new IOException("Can not open port " + port);
                 }
 
-                channel = ClientChannel.open(sock, extRepository);
+                channel = newClientChannel(sock, extRepository);
                 if (channel != null) {
                     commandCtx.add(channel);
                     Response<Boolean> f = channel.sendCommand(InstrumentCommand.class, new AbstractCommand.Initializer<InstrumentCommand>() {
@@ -516,6 +516,10 @@ public class Client {
             }
         }
     }
+
+    protected Channel newClientChannel(Socket sock, ExtensionsRepository extRepository) {
+        return ClientChannel.open(sock, extRepository);
+    }
     
     public void exit(int exitCode) {
         if (setState(State.RUNNING, State.EXITING)) {
@@ -552,7 +556,7 @@ public class Client {
         }
     }
     
-    private void sendExit(final int exitCode) {
+    protected void sendExit(final int exitCode) {
         try {
             Response<Void> r = channel.sendCommand(ExitCommand.class, new AbstractCommand.Initializer<ExitCommand>() {
 
@@ -622,7 +626,7 @@ public class Client {
         }
     }
     
-    private void setState(State reqState) {
+    protected void setState(State reqState) {
         state.set(reqState);
         notifyStateChange();
     }

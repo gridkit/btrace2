@@ -47,7 +47,7 @@ import java.util.List;
  * 
  * @since 2.0
  */
-public final class ClientChannel extends SocketChannel {
+public class ClientChannel extends SocketChannel {
 
     protected ClientChannel(ObjectInput oi, ObjectOutput oo, ExtensionsRepository extRep) {
         super(oi, oo, extRep);
@@ -85,7 +85,7 @@ public final class ClientChannel extends SocketChannel {
                 int minVer = input.readInt();
                 if (majVer < Version.MAJOR || (majVer == Version.MAJOR && minVer <= Version.MINOR)) {
                     output.writeBoolean(true);
-                    CommandFactory cf = CommandFactory.getInstance(extRep.getClassLoader(getMyLoader()));
+                    CommandFactory cf = newCommandFactory();
                     List<Class<? extends AbstractCommand>> supportedCmds = cf.listSupportedCommands();
                     if (BTraceLogger.isDebug()) {
                         BTraceLogger.debugPrint("sending list of supported commands (" + supportedCmds.size() + ")");
@@ -128,5 +128,8 @@ public final class ClientChannel extends SocketChannel {
         }
         return false;
     }
-    
+
+    protected CommandFactory newCommandFactory() {
+        return CommandFactory.getInstance(extRep.getClassLoader(getMyLoader()));
+    }
 }

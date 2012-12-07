@@ -193,7 +193,15 @@ public class CommandFactory {
         }
         return null;
     }
-    
+
+    public static CommandFactory getInstance(Iterable<CommandImpl> svcs) {
+        try {
+            return new CommandFactory(svcs);
+        } catch (NoSuchMethodException e) {
+        }
+        return null;
+    }
+
     /**
      * Lists all the supported commands
      * @return The list of all the supported commands
