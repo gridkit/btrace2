@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 import static net.java.btrace.org.objectweb.asm.Opcodes.ACC_INTERFACE;
 import static net.java.btrace.instr.Constants.*;
+
+import net.java.btrace.api.core.BTraceLogger;
 import net.java.btrace.org.objectweb.asm.AnnotationVisitor;
 import net.java.btrace.org.objectweb.asm.Attribute;
 import net.java.btrace.org.objectweb.asm.ClassReader;
@@ -295,7 +297,7 @@ public class ClassFilter {
                             className.length() - 1));
                     patSrcList.add(p);
                 } catch (PatternSyntaxException pse) {
-                    System.err.println("btrace ERROR: invalid regex pattern - " + className.substring(1, className.length() - 1));
+                    BTraceLogger.debugPrint("btrace ERROR: invalid regex pattern - " + className.substring(1, className.length() - 1));
                 }
             } else if (firstCh == '@') {
                 className = className.substring(1);
@@ -305,7 +307,7 @@ public class ClassFilter {
                                 className.substring(1, className.length() - 1));
                         patAnoList.add(p);
                     } catch (PatternSyntaxException pse) {
-                        System.err.println("btrace ERROR: invalid regex pattern - " + className.substring(1, className.length() - 1));
+                        BTraceLogger.debugPrint("btrace ERROR: invalid regex pattern - " + className.substring(1, className.length() - 1));
                     }
                 } else {
                     strAnoList.add(className);

@@ -25,6 +25,7 @@
 
 package net.java.btrace.instr;
 
+import net.java.btrace.api.core.BTraceLogger;
 import net.java.btrace.api.types.AnyType;
 import static net.java.btrace.org.objectweb.asm.Opcodes.*;
 import java.util.Map;
@@ -101,8 +102,7 @@ class TypeUtils {
             try {
                 clzLeft = cl.loadClass(left.getClassName());
             } catch (Throwable e) {
-                System.err.println("btrace ERR");
-                e.printStackTrace(System.err);
+                BTraceLogger.debugPrint(e);
                 clzLeft = Object.class;
             }
 
@@ -114,8 +114,7 @@ class TypeUtils {
             try {
                 clzRight = cl.loadClass(left.getClassName());
             } catch (Throwable e) {
-                System.err.println("btrace ERR");
-                e.printStackTrace(System.err);
+                BTraceLogger.debugPrint(e);
                 clzRight = Object.class;
             }
             return (clzLeft.isAssignableFrom(clzRight));

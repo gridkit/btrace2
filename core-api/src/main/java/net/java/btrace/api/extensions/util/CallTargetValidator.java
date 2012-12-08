@@ -25,6 +25,7 @@
 
 package net.java.btrace.api.extensions.util;
 
+import net.java.btrace.api.core.BTraceLogger;
 import net.java.btrace.api.extensions.BTraceExtension;
 import net.java.btrace.api.extensions.ExtensionsRepository;
 import java.lang.reflect.Method;
@@ -42,9 +43,9 @@ public class CallTargetValidator {
     public CallTargetValidator(ExtensionsRepository repository) {
         this.repository = repository;
         
-        System.err.println(">>> located extensions");
+        BTraceLogger.debugPrint(">>> located extensions");
         for(String s : repository.listExtensions()) {
-            System.err.println(">>> " + s);
+            BTraceLogger.debugPrint(">>> " + s);
         }
     }
     

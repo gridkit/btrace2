@@ -120,6 +120,7 @@ public class Client {
     
     final private int pid;
     final private VirtualMachine vm;
+    private boolean debug;
     private int port;
     private boolean unsafe;
     private boolean dumpClasses;
@@ -311,6 +312,18 @@ public class Client {
         }
     }
 
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        if (state.get() != State.OFFLINE) {
+            BTraceLogger.debugPrint("Can not change client parameters when already attached");
+            return;
+        }
+        this.debug = debug;
+    }
+
     public int getPort() {
         return port;
     }
@@ -398,7 +411,7 @@ public class Client {
                 if (bootstrapPath != null) {
                     agentArgs += ",bootstrap=" + bootstrapPath;
                 }
-                if (BTraceLogger.isDebug()) {
+                if (debug) {
                     agentArgs += ",debug=true";
                 }
                 if (unsafe) {
@@ -620,9 +633,7 @@ public class Client {
                 }
             });
         } catch (IOException exp) {
-            if (BTraceLogger.isDebug()) {
-                exp.printStackTrace();
-            }
+            BTraceLogger.debugPrint(exp);
         }
     }
     

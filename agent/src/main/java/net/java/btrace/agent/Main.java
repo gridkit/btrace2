@@ -85,6 +85,10 @@ public class Main {
     
     private static void doMain(String args, Instrumentation inst) {
         try {
+            if (args.contains(",debug=true")) {
+                BTraceLogger.debug(true);
+            }
+
             setupBootstrap(args, inst);
             Server s = Server.getDefault();
             if (!s.isRunning()) {
@@ -96,7 +100,7 @@ public class Main {
                 BTraceLogger.debugPrint("server already running with settings: " + s.getSetting());
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            BTraceLogger.debugPrint(ex);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

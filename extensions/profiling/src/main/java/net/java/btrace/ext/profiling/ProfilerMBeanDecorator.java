@@ -24,6 +24,7 @@
  */
 package net.java.btrace.ext.profiling;
 
+import net.java.btrace.api.core.BTraceLogger;
 import net.java.btrace.api.core.BTraceMBean;
 import net.java.btrace.spi.core.MBeanDecoratorImpl;
 import java.lang.reflect.Type;
@@ -106,7 +107,7 @@ public class ProfilerMBeanDecorator extends MBeanDecoratorImpl {
                 }
             }
         } catch (OpenDataException ode) {
-            ode.printStackTrace();
+            BTraceLogger.debugPrint(ode);
         }
         return null;
     }
@@ -130,7 +131,7 @@ public class ProfilerMBeanDecorator extends MBeanDecoratorImpl {
                                     new CompositeData[0]
                                 });
                     } catch (OpenDataException e) {
-                        e.printStackTrace();
+                        BTraceLogger.debugPrint(e);
                         return null;
                     }
                 }
@@ -172,9 +173,9 @@ public class ProfilerMBeanDecorator extends MBeanDecoratorImpl {
                                 new String[]{"key", "value"},
                                 new Object[]{r.blockName, recordData});
                     } catch (OpenDataException ode) {
-                        ode.printStackTrace();
+                        BTraceLogger.debugPrint(ode);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        BTraceLogger.debugPrint(e);
                     }
                     index++;
                 }
@@ -190,9 +191,9 @@ public class ProfilerMBeanDecorator extends MBeanDecoratorImpl {
                                 total
                             });
                 } catch (OpenDataException e) {
-                    e.printStackTrace();
+                    BTraceLogger.debugPrint(e);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    BTraceLogger.debugPrint(e);
                 }
                 return snapshotData;
             }

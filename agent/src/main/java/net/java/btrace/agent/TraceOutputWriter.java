@@ -229,14 +229,14 @@ abstract public class TraceOutputWriter extends Writer {
         if (f == null || f.exists()) return;
         
         ensurePathExists(f.getParentFile());
-        System.err.println("continuing");
+        BTraceLogger.debugPrint("continuing");
 
         if (!f.getName().endsWith(".btrace")) { // not creating the actual file
             try {
-                System.err.println("creating new folder " + f.toString());
+                BTraceLogger.debugPrint("creating new folder " + f.toString());
                 f.createNewFile();
             } catch (IOException e) {
-                e.printStackTrace();
+                BTraceLogger.debugPrint(e);
                 // ignore and continue
             }
         }

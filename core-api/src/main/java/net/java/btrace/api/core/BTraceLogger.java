@@ -24,6 +24,8 @@
  */
 package net.java.btrace.api.core;
 
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileOutputStream;
 
@@ -32,28 +34,58 @@ import java.io.FileOutputStream;
  * @author Jaroslav Bachorik
  */
 final public class BTraceLogger {
-    public static boolean isDebug() {
-        return true;
-//        return Boolean.getBoolean("net.java.btrace.debug");
+    public static final String BTRACE_LOGGER_NAME = "BTrace";
+
+    private static volatile boolean useSlf4j = false;
+    private static volatile boolean debug = Boolean.getBoolean("net.java.btrace.debug");
+
+    private static volatile boolean dumpClasses = Boolean.getBoolean("net.java.btrace.dumpClasses");
+    private static volatile String dumpDir = System.getProperty("net.java.btrace.dumpDir", ".");
+
+    public static void useSlf4j(boolean useSlf4j) {
+        BTraceLogger.useSlf4j = useSlf4j;
     }
-    
-    public static boolean isDumpClasses() {
-        return true;
+
+    public static void debug(boolean debug) {
+        BTraceLogger.debug = debug;
+    }
+
+    public static void dumpClasses(boolean dumpClasses) {
+        BTraceLogger.dumpClasses = dumpClasses;
+    }
+
+    public static void dumpDir(String dumpDir) {
+        BTraceLogger.dumpDir = dumpDir;
+    }
+
+    public static boolean isDebug() {
+        return debug;
     }
     
     public static void debugPrint(String msg) {
-        if (isDebug()) System.out.println("btrace DEBUG:" + msg);
+        if (useSlf4j) {
+            LoggerFactory.getLogger(BTRACE_LOGGER_NAME).debug(msg);
+        } else {
+            if (debug) {
+                System.out.println("btrace DEBUG:" + msg);
+            }
+        }
     }
     
     public static void debugPrint(Throwable th) {
-        System.err.println("btrace ERROR: " + th);
-        th.printStackTrace(System.err);
+        if (useSlf4j) {
+            LoggerFactory.getLogger(BTRACE_LOGGER_NAME).error(th.toString(), th);
+        } else {
+            if (debug) {
+                System.err.println("btrace ERROR: " + th);
+                th.printStackTrace(System.err);
+            }
+        }
     }
     
     public static void dumpClass(String className, byte[] code) {
-        if (isDumpClasses()) {
+        if (dumpClasses) {
             try {
-                String dumpDir = getDumpDir();
                 className = className.replace(".", File.separator).replace("/", File.separator);
                 int index = className.lastIndexOf(File.separatorChar);
                 StringBuilder buf = new StringBuilder();
@@ -85,10 +117,5 @@ final public class BTraceLogger {
                 exp.printStackTrace();
             }
         }
-    }
-    
-    private static String getDumpDir() {
-        return "/tmp";
-//        return System.getProperty("net.java.btrace.dumpDir", ".");
     }
 }

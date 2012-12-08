@@ -61,7 +61,7 @@ abstract public class Channel {
                             } catch (InterruptedException e) {}
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        BTraceLogger.debugPrint(e);
                     }
                 }
             }, "BTrace Delayed Writer");

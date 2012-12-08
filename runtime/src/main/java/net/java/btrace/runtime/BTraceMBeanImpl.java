@@ -34,6 +34,7 @@ package net.java.btrace.runtime;
  */
 import net.java.btrace.annotations.BTrace;
 import net.java.btrace.annotations.Property;
+import net.java.btrace.api.core.BTraceLogger;
 import net.java.btrace.api.core.BTraceMBean;
 import net.java.btrace.api.extensions.ExtensionsRepository;
 import net.java.btrace.spi.core.MBeanDecoratorImpl;
@@ -325,7 +326,7 @@ final class BTraceMBeanImpl extends BTraceMBean {
                 }
             }
         } catch (OpenDataException ode) {
-            ode.printStackTrace();
+            BTraceLogger.debugPrint(ode);
         }
 
         // nothing seems working...
@@ -366,7 +367,7 @@ final class BTraceMBeanImpl extends BTraceMBean {
                     try {
                         array[index] = new CompositeDataSupport(ct, row);
                     } catch (OpenDataException ode) {
-                        ode.printStackTrace();
+                        BTraceLogger.debugPrint(ode);
                     }
                     index++;
                 }

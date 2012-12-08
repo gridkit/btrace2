@@ -85,8 +85,8 @@ import net.java.btrace.instr.ExtensionRuntimeProcessor;
  * @author Jaroslav Bachorik
  */
 final public class Server {
-    private static final int BTRACE_DEFAULT_PORT = 2020;
-    private static final String BTRACE_PORT_KEY = "btrace.port";
+    public static final int BTRACE_DEFAULT_PORT = 2020;
+    public static final String BTRACE_PORT_KEY = "btrace.port";
     
     final private static ClassFileTransformer extensionTransformer = new ClassFileTransformer() {
         @Override
@@ -287,7 +287,10 @@ final public class Server {
      * @param settings BTrace server settings (a {@linkplain Settings} instance
      * @throws IOException 
      */
-    public void run(Instrumentation instr, Settings settings) throws IOException {      
+    public void run(Instrumentation instr, Settings settings) throws IOException {
+        BTraceLogger.dumpClasses(settings.dumpClasses);
+        BTraceLogger.dumpDir(settings.dumpDir);
+
         // need to capture the class loads of extensions
         instr.addTransformer(extensionTransformer, true);
         
@@ -394,7 +397,7 @@ final public class Server {
         } catch (IOException e) {
             BTraceLogger.debugPrint(e);
         } catch (InterruptedException e) {
-            e.printStackTrace(System.err);
+            BTraceLogger.debugPrint(e);
             Thread.currentThread().interrupt();
         } catch (RuntimeException re) {
             BTraceLogger.debugPrint(re);

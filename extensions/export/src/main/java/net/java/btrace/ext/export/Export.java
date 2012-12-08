@@ -24,6 +24,7 @@
  */
 package net.java.btrace.ext.export;
 
+import net.java.btrace.api.core.BTraceLogger;
 import net.java.btrace.api.extensions.BTraceExtension;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -152,7 +153,7 @@ public class Export {
                 try {
                     dotWriterProps.load(is);
                 } catch (IOException ioExp) {
-                    ioExp.printStackTrace();
+                    BTraceLogger.debugPrint(ioExp);
                 }
             }
             try {
@@ -165,7 +166,7 @@ public class Export {
                     }
                 }
             } catch (Exception exp) {
-                exp.printStackTrace();
+                BTraceLogger.debugPrint(exp);
             }
         }
     }

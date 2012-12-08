@@ -24,6 +24,7 @@
  */
 package net.java.btrace.agent.wireio;
 
+import net.java.btrace.api.core.BTraceLogger;
 import net.java.btrace.api.extensions.ExtensionsRepository;
 import net.java.btrace.api.wireio.AbstractCommand;
 import net.java.btrace.api.wireio.CommandFactory;
@@ -111,7 +112,7 @@ public final class ServerChannel extends SocketChannel {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            BTraceLogger.debugPrint(e);
         } finally {
             try {
                 output.flush();

@@ -122,9 +122,9 @@ public class ClientChannel extends SocketChannel {
                 output.writeBoolean(false);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            BTraceLogger.debugPrint(e);
         } catch (SecurityException e) {
-            e.printStackTrace();
+            BTraceLogger.debugPrint(e);
         }
         return false;
     }

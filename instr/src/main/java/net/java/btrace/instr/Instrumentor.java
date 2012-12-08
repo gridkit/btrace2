@@ -35,6 +35,8 @@ import static net.java.btrace.org.objectweb.asm.Opcodes.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+
+import net.java.btrace.api.core.BTraceLogger;
 import net.java.btrace.org.objectweb.asm.AnnotationVisitor;
 import net.java.btrace.org.objectweb.asm.ClassReader;
 import net.java.btrace.org.objectweb.asm.ClassVisitor;
@@ -1467,7 +1469,7 @@ public class Instrumentor extends ClassVisitor {
     }
 
     private static void reportPatternSyntaxException(String pattern) {
-        System.err.println("btrace ERROR: invalid regex pattern - " + pattern);
+        BTraceLogger.debugPrint("btrace ERROR: invalid regex pattern - " + pattern);
     }
 }
 

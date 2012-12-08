@@ -453,7 +453,7 @@ public final class BTraceRuntime {
                         m.setAccessible(true);
                         return m.invoke(initValue);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        BTraceLogger.debugPrint(e);
                         return null;
                     }
                 }
@@ -627,7 +627,7 @@ public final class BTraceRuntime {
         if (current != null) {
             current.handleExceptionImpl(th);
         } else {
-            th.printStackTrace();
+            BTraceLogger.debugPrint(th);
         }
     }
 
@@ -941,7 +941,7 @@ public final class BTraceRuntime {
         try {
             return rt.channel.sendCommand(cmdClass, init);
         } catch (IOException ie) {
-            ie.printStackTrace();
+            BTraceLogger.debugPrint(ie);
         }
         return null;
     }
@@ -993,7 +993,7 @@ public final class BTraceRuntime {
                 rt.instrumentation.retransformClasses(clazz);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            BTraceLogger.debugPrint(e);
         }
     }
     
@@ -1032,7 +1032,7 @@ public final class BTraceRuntime {
                         
                         queue.put(ec);
                     } catch (InterruptedException ie) {
-                        ie.printStackTrace();
+                        BTraceLogger.debugPrint(ie);
                     }
                 }
             }

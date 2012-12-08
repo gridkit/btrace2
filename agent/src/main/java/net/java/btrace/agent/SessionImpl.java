@@ -152,7 +152,7 @@ final public class SessionImpl extends Session implements ShutdownHandler {
 
                 return null; // ignore
             } catch (Exception e) {
-                e.printStackTrace();
+                BTraceLogger.debugPrint(e);
                 if (e instanceof IllegalClassFormatException) {
                     throw (IllegalClassFormatException) e;
                 }
@@ -269,7 +269,7 @@ final public class SessionImpl extends Session implements ShutdownHandler {
         } catch (UnmodifiableClassException e) {
             capturedError = e;
         } catch (Throwable e) {
-            e.printStackTrace();
+            BTraceLogger.debugPrint(e);
         } finally {
             try {
                 if (capturedError == null) {
@@ -302,7 +302,7 @@ final public class SessionImpl extends Session implements ShutdownHandler {
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    BTraceLogger.debugPrint(e);
                 }
                 cleanup();
             } catch (IOException e) {

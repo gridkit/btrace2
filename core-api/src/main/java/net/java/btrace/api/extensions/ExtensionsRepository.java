@@ -25,6 +25,7 @@
 
 package net.java.btrace.api.extensions;
 
+import net.java.btrace.api.core.BTraceLogger;
 import net.java.btrace.api.core.ServiceLocator;
 import java.io.File;
 import java.io.FileFilter;
@@ -68,7 +69,7 @@ abstract public class ExtensionsRepository {
                     ExtensionPrivilege perm = ExtensionPrivilege.valueOf(permName);
                     requestedPermissions.add(perm);
                 } catch (IllegalArgumentException e) {
-                    System.err.println("*** invalid permission name: " + permName);
+                    BTraceLogger.debugPrint("*** invalid permission name: " + permName);
                 }
             }
         }
@@ -285,14 +286,14 @@ abstract public class ExtensionsRepository {
                     Location extLocation = Location.valueOf(extLocationStr.toUpperCase());
                     if (location == Location.BOTH || extLocation == Location.BOTH || location == extLocation) {
                         if (mf.getEntries().isEmpty()) {
-                            System.err.println("*** attempting to load an extension from unsigned jar: " + jf.getName() + " @" + extLocation.name());
+                            BTraceLogger.debugPrint("*** attempting to load an extension from unsigned jar: " + jf.getName() + " @" + extLocation.name());
                         }
                         Set<ExtensionPrivilege> requestedPrivileges = getRequestedPrivileges(attrs);
                         if (privileges.containsAll(requestedPrivileges)) {
                             jars.add(dir);
                         } else {
                             requestedPrivileges.removeAll(privileges);
-                            System.err.println("*** attempting to load an extension with not allowed privileges: " + requestedPrivileges);
+                            BTraceLogger.debugPrint("*** attempting to load an extension with not allowed privileges: " + requestedPrivileges);
                         }
                     }
                 }

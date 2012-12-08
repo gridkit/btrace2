@@ -88,13 +88,13 @@ public class CommandFactory {
                 }
                 return instance;
             } catch (InstantiationException e) {
-                e.printStackTrace(System.err);
+                BTraceLogger.debugPrint(e);
             } catch (IllegalAccessException e) {
-                e.printStackTrace(System.err);
+                BTraceLogger.debugPrint(e);
             } catch (IllegalArgumentException e) {
-                e.printStackTrace(System.err);
+                BTraceLogger.debugPrint(e);
             } catch (InvocationTargetException e) {
-                e.printStackTrace(System.err);
+                BTraceLogger.debugPrint(e);
             }
             return null;
         }
