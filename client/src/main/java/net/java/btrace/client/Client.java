@@ -118,8 +118,8 @@ public class Client {
         String locateToolsJar();
     }
     
-    final private int pid;
-    final private VirtualMachine vm;
+    final protected int pid;
+    private VirtualMachine vm;
     private boolean debug;
     private int port;
     private boolean unsafe;
@@ -146,11 +146,11 @@ public class Client {
     private Channel channel = null;
     private ValueFormatter vFormatter = null;
 
-    protected Client(final int pid) throws AttachNotSupportedException, IOException {
+    protected Client(final int pid) throws Exception {
         this.pid = pid;
         BTraceLogger.debugPrint("Connecting client to " + pid);
 
-        vm = VirtualMachine.attach(String.valueOf(pid));
+        attach(pid);
 
         agentPath = findAgentPath();
         DEFAULT_REPOSITORY = ExtensionsRepositoryFactory.builtin(ExtensionsRepository.Location.CLIENT);
@@ -213,12 +213,14 @@ public class Client {
         commandCtx.add(this, vFormatter);
     }
 
+    protected void attach(int pid) throws Exception {
+        this.vm = VirtualMachine.attach(String.valueOf(pid));
+    }
+
     public static Client forProcess(int pid) {
         try {
             return new Client(pid);
-        } catch (AttachNotSupportedException e) {
-            BTraceLogger.debugPrint(e);
-        } catch (IOException e) {
+        } catch (Exception e) {
             BTraceLogger.debugPrint(e);
         }
         return null;
@@ -388,11 +390,11 @@ public class Client {
         return channel;
     }
 
-    public void attach() throws IOException {
+    public void attach() throws Exception {
         if (setState(State.OFFLINE, State.ATTACHING)) {
             BTraceLogger.debugPrint("checking port availability: " + port);
 
-            int serverPort = Integer.parseInt(vm.getSystemProperties().getProperty("btrace.port", "-1"));
+            int serverPort = getServerPort();
             if (serverPort != -1) {
                 if (serverPort != port) {
                     throw new IOException("Can not attach to PID " + pid + " on port " + port + ". There is already a BTrace server active on port " + serverPort + "!");
@@ -438,7 +440,7 @@ public class Client {
                 BTraceLogger.debugPrint("agent args: " + agentArgs);
 
                 try {
-                    vm.loadAgent(agentPath, agentArgs);
+                    loadAgent(agentPath, agentArgs);
                     setState(State.ATTACHED);
                     BTraceLogger.debugPrint("loaded " + agentPath);
                 } catch (AgentLoadException e) {
@@ -452,6 +454,14 @@ public class Client {
                 setState(State.ATTACHED);
             }
         }
+    }
+
+    protected int getServerPort() throws Exception {
+        return Integer.parseInt(vm.getSystemProperties().getProperty("btrace.port", "-1"));
+    }
+
+    protected void loadAgent(String agentPath, String agentArgs) throws Exception {
+        vm.loadAgent(agentPath, agentArgs);
     }
 
     public void submit(String fileName, final byte[] code, String[] args) throws IOException {

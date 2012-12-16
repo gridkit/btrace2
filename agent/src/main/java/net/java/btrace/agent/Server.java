@@ -79,6 +79,7 @@ import net.java.btrace.api.extensions.BTraceExtension;
 import net.java.btrace.api.wireio.Response;
 import net.java.btrace.api.wireio.ResponseHandler;
 import net.java.btrace.instr.ExtensionRuntimeProcessor;
+import sun.misc.VMSupport;
 
 /**
  *
@@ -307,9 +308,9 @@ final public class Server {
         setupSystemClassPath(settings);
         
         startProvidedScripts(settings);
-        
+
         if (!settings.noSocketServer) {
-            int runningServerPort = Integer.valueOf(System.getProperty(BTRACE_PORT_KEY, "-1"));
+            int runningServerPort = Integer.valueOf(VMSupport.getAgentProperties().getProperty(BTRACE_PORT_KEY, "-1"));
             if (runningServerPort != -1 && runningServerPort != settings.port) {
                 BTraceLogger.debugPrint("Can not start BTrace socket server on port " + settings.port + ". There is already a server running on port " + runningServerPort);
             } else {
@@ -467,7 +468,7 @@ final public class Server {
             public void run() {
                 running = true;
                 boolean wasTimeout = false;
-                System.setProperty(BTRACE_PORT_KEY, String.valueOf(port));
+                VMSupport.getAgentProperties().setProperty(BTRACE_PORT_KEY, String.valueOf(port));
                 while (running) {
                     try {
                         while (!stateReqQueue.isEmpty()) {
@@ -497,7 +498,7 @@ final public class Server {
                 }
                 BTraceLogger.debugPrint("Leaving BTrace Socket Server");
                 try {
-                    System.getProperties().remove(BTRACE_PORT_KEY);
+                    VMSupport.getAgentProperties().remove(BTRACE_PORT_KEY);
                     ss.close();
                 } catch (IOException e) {
                     BTraceLogger.debugPrint(e);

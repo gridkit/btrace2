@@ -210,7 +210,7 @@ public final class Main {
             }
             BTraceLogger.debugPrint("submitting the BTrace program");
             client.submit(fileName, code, args);
-        } catch (IOException exp) {
+        } catch (Exception exp) {
             exp.printStackTrace();
             errorExit(exp.getMessage(), 1);
         }
