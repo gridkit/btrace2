@@ -264,7 +264,10 @@ final public class SessionImpl extends Session implements ShutdownHandler {
                         }
                     }
                 }
-                server.getInstrumentation().retransformClasses(clzs.toArray(new Class[clzs.size()]));
+
+                if (!clzs.isEmpty()) {
+                    server.getInstrumentation().retransformClasses(clzs.toArray(new Class[clzs.size()]));
+                }
             }
         } catch (UnmodifiableClassException e) {
             capturedError = e;
@@ -409,7 +412,7 @@ final public class SessionImpl extends Session implements ShutdownHandler {
 
     private void verify(byte[] buf) {
         ClassReader reader = new ClassReader(buf);
-        Verifier verifier = new Verifier(new ClassVisitor(Opcodes.ASM4){}, false, server.getExtensionRepository());
+        Verifier verifier = new Verifier(new ClassVisitor(Opcodes.ASM4){}, server.getSetting().unsafeMode, server.getExtensionRepository());
         BTraceLogger.debugPrint("verifying BTrace class"); // NOI18N
         InstrumentUtils.accept(reader, verifier);
         className = verifier.getClassName().replace('/', '.');
