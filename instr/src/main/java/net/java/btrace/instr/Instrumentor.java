@@ -1455,7 +1455,11 @@ public class Instrumentor extends ClassVisitor {
             String d = TypeUtils.declarationToDescriptor(decl);
             Type[] args1 = Type.getArgumentTypes(d);
             Type[] args2 = Type.getArgumentTypes(desc);
-            return TypeUtils.isCompatible(args1, args2);
+
+            Type ret1 = Type.getReturnType(d);
+            Type ret2 = Type.getReturnType(desc);
+
+            return TypeUtils.isCompatible(args1, args2) && TypeUtils.isCompatible(ret1, ret2);
         }
     }
     

@@ -112,7 +112,7 @@ class TypeUtils {
             }
 
             try {
-                clzRight = cl.loadClass(left.getClassName());
+                clzRight = cl.loadClass(right.getClassName());
             } catch (Throwable e) {
                 BTraceLogger.debugPrint(e);
                 clzRight = Object.class;
