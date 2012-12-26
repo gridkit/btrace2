@@ -1425,10 +1425,10 @@ public class Instrumentor extends ClassVisitor {
     }
 
     private void invokeBTraceAction(MethodInstrumentor mv, OnMethod om) {
+        BTraceLogger.debugPrint("client " + btraceClassName.replace('/', '.') + ": instrumenting method " + mv.getName(true)); // NOI18N
         mv.invokeStatic(className, getActionMethodName(om.getTargetName()),
             om.getTargetDescriptor().replace(ANYTYPE_DESC, OBJECT_DESC));
         calledOnMethods.add(om);
-        BTraceLogger.debugPrint("client " + btraceClassName.replace('/', '.') + ": instrumenting method " + mv.getName(true)); // NOI18N
     }
 
     private boolean matches(String pattern, String input) {
