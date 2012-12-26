@@ -12,7 +12,7 @@
         <groupId>net.java.btrace</groupId>
         <artifactId>btrace-parent</artifactId>
         <relativePath>../btrace-parent</relativePath>
-        <version>2.0-nimble-4</version>
+        <version>2.0-nimble-SNAPSHOT</version>
     </parent>
     <description>
         Wrapper for ASM's libraries
