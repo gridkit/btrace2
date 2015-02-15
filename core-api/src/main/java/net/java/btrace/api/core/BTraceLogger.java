@@ -43,9 +43,11 @@ final public class BTraceLogger {
     private static volatile boolean dumpClasses = Boolean.getBoolean("net.java.btrace.dumpClasses");
     private static volatile String dumpDir = System.getProperty("net.java.btrace.dumpDir", ".");
 
+    // TODO artem.panasyul: remove static variables and make singleton
     public static void config(Server.Settings settings) {
-        // artem.panasyuk: inspect where it's called
-        debug = settings.debugMode || Boolean.getBoolean("net.java.btrace.debug");
+        debug = settings.debugMode || debug;
+        dumpClasses = settings.dumpClasses || dumpClasses;
+        dumpDir = settings.dumpDir == null ? dumpDir : settings.dumpDir;
     }
 
     public static void useSlf4j(boolean useSlf4j) {
@@ -70,6 +72,10 @@ final public class BTraceLogger {
 
     public static boolean isDumpClasses() {
         return dumpClasses;
+    }
+
+    public static String getDumpDir() {
+        return dumpDir;
     }
 
     public static void debugPrint(String msg) {
@@ -127,9 +133,5 @@ final public class BTraceLogger {
                 exp.printStackTrace();
             }
         }
-    }
-
-    private static String getDumpDir() {
-        return dumpDir;
     }
 }

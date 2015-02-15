@@ -42,6 +42,7 @@
         <module>samples</module>
         <module>agent</module>
         <module>boot</module>
+        <module>extensions</module>
         <module>extensions/default</module>
         <module>extensions/collections</module>
         <module>extensions/aggregations</module>

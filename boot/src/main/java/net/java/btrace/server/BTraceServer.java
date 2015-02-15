@@ -161,10 +161,6 @@ final public class BTraceServer implements ServerImpl {
      */
     @Override
     public void start(Instrumentation instr, Server.Settings settings) throws IOException {
-        // artem.panasyuk: possibly wrong fix
-        BTraceLogger.dumpClasses(settings.dumpClasses);
-        BTraceLogger.dumpDir(settings.dumpDir);
-
         // need to capture the class loads of extensions
         instr.addTransformer(extensionTransformer, true);
 
@@ -474,7 +470,7 @@ final public class BTraceServer implements ServerImpl {
     }
 
     private SessionImpl addServerSession(Channel ch, final CountDownLatch initLatch) throws IOException {
-        SessionImpl session = new SessionImpl(ch, getExtensionRepository(), getInstrumentation());
+        SessionImpl session = new SessionImpl(ch, getExtensionRepository(), getInstrumentation(), getSettings());
         sessions.add(session);
         session.addObserver(new Observer() {
             @Override

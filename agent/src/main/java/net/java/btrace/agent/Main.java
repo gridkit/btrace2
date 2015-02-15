@@ -75,23 +75,26 @@ public class Main {
 
     private static void doMain(String args, Instrumentation inst) {
         try {
-            if (args.contains(",debug=true")) {
-                BTraceLogger.debug(true);
-            }
-
             setupBootstrap(args, inst);
+        } catch (IOException e) {
+            System.err.println("Failed to setup BTrace bootstrap:");
+            e.printStackTrace(System.err);
+            return;
+        }
+
+        Map<String, String> argMap = mapArgs(args);
+        if (argMap.containsKey("help")) {
+            usage();
+            return;
+        }
+
+        Server.Settings ss = Server.Settings.from(argMap);
+        BTraceLogger.config(ss);
+        BTraceLogger.debugPrint("parsed command line arguments");
+
+        try {
             Server s = Server.getDefault();
             if (!s.isRunning()) {
-                Map<String, String> argMap = mapArgs(args);
-                String p = argMap.get("help");
-                if (p != null) {
-                    usage();
-                    return;
-                }
-                Server.Settings ss = Server.Settings.from(argMap);
-                BTraceLogger.config(ss);
-
-                BTraceLogger.debugPrint("parsed command line arguments");
                 s.start(inst, ss);
             } else {
                 BTraceLogger.debugPrint("server already running with settings: " + s.getSetting());
@@ -105,7 +108,6 @@ public class Main {
 
     private static void usage() {
         System.out.println(Messages.get("btrace.agent.usage"));
-        System.exit(0);
     }
 
     private static Map<String, String> mapArgs(String args) {

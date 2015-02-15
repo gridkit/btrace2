@@ -234,7 +234,9 @@ public class ServiceLocator {
                             continue;
                         }
                         while (line != null) {
-                            services.add(new ServiceLine(curpos, line));
+                            if (!line.trim().isEmpty()) {
+                                services.add(new ServiceLine(curpos, line));
+                            }
                             line = br.readLine();
                         }
                     } finally {

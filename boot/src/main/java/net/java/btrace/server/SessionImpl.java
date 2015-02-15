@@ -24,6 +24,7 @@
  */
 package net.java.btrace.server;
 
+import net.java.btrace.api.server.Server.Settings;
 import net.java.btrace.api.server.Session;
 import net.java.btrace.runtime.BTraceRuntime;
 import net.java.btrace.spi.server.ServerImpl;
@@ -431,7 +432,7 @@ final public class SessionImpl extends Session implements ShutdownHandler {
     private void verify(byte[] buf) {
         ClassReader reader = new ClassReader(buf);
         Verifier verifier = new Verifier(new ClassVisitor(Opcodes.ASM4) {
-        }, lookup.lookup(ServerImpl.class).getSettings().unsafeMode, lookup.lookup(ExtensionsRepository.class));
+        }, lookup.lookup(Settings.class).unsafeMode, lookup.lookup(ExtensionsRepository.class));
         BTraceLogger.debugPrint("verifying BTrace class"); // NOI18N
         InstrumentUtils.accept(reader, verifier);
         className = verifier.getClassName().replace('/', '.');
