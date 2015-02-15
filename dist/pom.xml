@@ -79,47 +79,47 @@
         <dependency>
             <groupId>net.java.btrace</groupId>
             <artifactId>docs</artifactId>
-            <version>2.0-nimble-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>net.java.btrace</groupId>
             <artifactId>samples</artifactId>
-            <version>2.0-nimble-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>net.java.btrace</groupId>
             <artifactId>ext-default</artifactId>
-            <version>2.0-nimble-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>net.java.btrace</groupId>
             <artifactId>ext-collections</artifactId>
-            <version>2.0-nimble-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>net.java.btrace</groupId>
             <artifactId>ext-aggregations</artifactId>
-            <version>2.0-nimble-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>net.java.btrace</groupId>
             <artifactId>ext-sys</artifactId>
-            <version>2.0-nimble-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>net.java.btrace</groupId>
             <artifactId>ext-export</artifactId>
-            <version>2.0-nimble-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>net.java.btrace</groupId>
             <artifactId>ext-profiling</artifactId>
-            <version>2.0-nimble-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>cli</artifactId>
-            <version>2.0-nimble-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -150,7 +150,7 @@
                 <dependency>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>dtrace-native</artifactId>
-                    <version>2.0-nimble-SNAPSHOT</version>
+                    <version>${project.version}</version>
                     <type>zip</type>
                     <classifier>${os.arch}</classifier>
                 </dependency>
