@@ -134,6 +134,7 @@ public class Client {
     private String agentPath;
     private String bootstrapPath;
     private Lookup commandCtx;
+    private PrintWriter printWriter;
     final private ToolsJarLocator DEFAULT_TJ_LOCATOR;
     final private ExtensionsRepository DEFAULT_REPOSITORY;
     final protected AtomicReference<State> state = new AtomicReference<State>(State.OFFLINE);
@@ -208,16 +209,16 @@ public class Client {
         sysCp = tjLocator.locateToolsJar();
 
         vFormatter = new ValueFormatter(extRepository.getClassLoader());
+        printWriter = new PrintWriter(System.out);
         commandCtx = new Lookup();
-        commandCtx.add(new PrintWriter(System.out));
-        commandCtx.add(this, vFormatter);
+        commandCtx.add(this, vFormatter, printWriter);
     }
 
     protected void attach(int pid) throws Exception {
         this.vm = VirtualMachine.attach(String.valueOf(pid));
     }
 
-    public static Client forProcess(int pid) {
+    public static Client forPID(int pid) {
         try {
             return new Client(pid);
         } catch (Exception e) {
@@ -230,79 +231,101 @@ public class Client {
         return agentPath;
     }
 
-    public void setAgentPath(String agentPath) {
+    public Client setAgentPath(String agentPath) {
         if (state.get() != State.OFFLINE) {
             BTraceLogger.debugPrint("Can not change client parameters when already attached");
-            return;
+            return this;
         }
         this.agentPath = agentPath != null ? agentPath : findAgentPath();
+        return this;
     }
 
-    public void setBootstrapPath(String bsPath) {
+    public Client setBootstrapPath(String bsPath) {
         if (state.get() != State.OFFLINE) {
             BTraceLogger.debugPrint("Can not change client parameters when already attached");
-            return;
+            return this;
         }
         this.bootstrapPath = bsPath;
+        return this;
     }
     
     public String getBootCp() {
         return bootCp;
     }
 
-    public void setBootCp(String bootCp) {
+    public Client setBootCp(String bootCp) {
         if (state.get() != State.OFFLINE) {
             BTraceLogger.debugPrint("Can not change client parameters when already attached");
-            return;
+            return this;
         }
         this.bootCp = bootCp;
+        return this;
     }
 
     public boolean isDumpClasses() {
         return dumpClasses;
     }
 
-    public void setDumpClasses(boolean dumpClasses) {
+    public Client setDumpClasses(boolean dumpClasses) {
         if (state.get() != State.OFFLINE) {
             BTraceLogger.debugPrint("Can not change client parameters when already attached");
-            return;
+            return this;
         }
         this.dumpClasses = dumpClasses;
+        return this;
     }
 
     public String getDumpDir() {
         return dumpDir;
     }
 
-    public void setDumpDir(String dumpDir) {
+    public Client setDumpDir(String dumpDir) {
         if (state.get() != State.OFFLINE) {
             BTraceLogger.debugPrint("Can not change client parameters when already attached");
-            return;
+            return this;
         }
 
         this.dumpDir = dumpDir;
+        return this;
+    }
+    
+    public Client setPrintWriter(PrintWriter pw) {
+        if (state.get() != State.OFFLINE) {
+            BTraceLogger.debugPrint("Can not change client parameters when already attached");
+            return this;
+        }
+        
+        if (this.printWriter != null) {
+            commandCtx.remove(this.printWriter);
+        }
+        this.printWriter = pw;
+        if (pw != null) {
+            commandCtx.add(this.printWriter);
+        }
+        return this;
     }
 
     public ToolsJarLocator getToolsJarLocator() {
         return tjLocator;
     }
 
-    public void setToolsJarLocator(ToolsJarLocator tjLocator) {
+    public Client setToolsJarLocator(ToolsJarLocator tjLocator) {
         if (state.get() != State.OFFLINE) {
             BTraceLogger.debugPrint("Can not change client parameters when already attached");
-            return;
+            return this;
         }
         this.tjLocator = tjLocator != null ? tjLocator : DEFAULT_TJ_LOCATOR;
+        return this;
     }
 
     public ExtensionsRepository getExtRepository() {
         return extRepository;
     }
 
-    public void setExtRepository(ExtensionsRepository extRepository) {
+    public Client setExtRepository(ExtensionsRepository extRepository) {
         if (state.get() != State.OFFLINE) {
             BTraceLogger.debugPrint("Can not change client parameters when already attached");
-            return;
+            return this;
         }
         if (extRepository != this.extRepository) {
             this.extRepository = extRepository != null ? extRepository : DEFAULT_REPOSITORY;
@@ -312,6 +335,7 @@ public class Client {
             vFormatter = new ValueFormatter(extRepository.getClassLoader());
             commandCtx.add(vFormatter);
         }
+        return this;
     }
 
     public boolean isDebug() {
@@ -330,67 +354,72 @@ public class Client {
         return port;
     }
 
-    public void setPort(int port) {
+    public Client setPort(int port) {
         if (state.get() != State.OFFLINE) {
             BTraceLogger.debugPrint("Can not change client parameters when already attached");
-            return;
+            return this;
         }
         this.port = port;
+        return this;
     }
 
     public String getProbeDescPath() {
         return probeDescPath;
     }
 
-    public void setProbeDescPath(String probeDescPath) {
+    public Client setProbeDescPath(String probeDescPath) {
         if (state.get() != State.OFFLINE) {
             BTraceLogger.debugPrint("Can not change client parameters when already attached");
-            return;
+            return this;
         }
         this.probeDescPath = probeDescPath;
+        return this;
     }
 
     public String getSysCp() {
         return sysCp;
     }
 
-    public void setSysCp(String sysCp) {
+    public Client setSysCp(String sysCp) {
         if (state.get() != State.OFFLINE) {
             BTraceLogger.debugPrint("Can not change client parameters when already attached");
-            return;
+            return this;
         }
         this.sysCp = sysCp != null ? sysCp : tjLocator.locateToolsJar();
+        return this;
     }
 
     public boolean isTrackRetransforms() {
         return trackRetransforms;
     }
 
-    public void setTrackRetransforms(boolean trackRetransforms) {
+    public Client setTrackRetransforms(boolean trackRetransforms) {
         if (state.get() != State.OFFLINE) {
             BTraceLogger.debugPrint("Can not change client parameters when already attached");
-            return;
+            return this;
         }
         this.trackRetransforms = trackRetransforms;
+        return this;
     }
 
     public boolean isUnsafe() {
         return unsafe;
     }
 
-    public void setUnsafe(boolean unsafe) {
+    public Client setUnsafe(boolean unsafe) {
         if (state.get() != State.OFFLINE) {
             BTraceLogger.debugPrint("Can not change client parameters when already attached");
-            return;
+            return this;
         }
         this.unsafe = unsafe;
+        return this;
     }
 
     public Channel getCommChannel() {
         return channel;
     }
 
-    public void attach() throws Exception {
+    public Client attach() throws IOException {
         if (setState(State.OFFLINE, State.ATTACHING)) {
             BTraceLogger.debugPrint("checking port availability: " + port);
 
@@ -454,9 +483,11 @@ public class Client {
                 setState(State.ATTACHED);
             }
         }
+        return this;
     }
 
     protected int getServerPort() throws Exception {
+        // artem.panasyuk: possibly should use agent properties
         return Integer.parseInt(vm.getSystemProperties().getProperty("btrace.port", "-1"));
     }
 
@@ -464,7 +495,7 @@ public class Client {
         vm.loadAgent(agentPath, agentArgs);
     }
 
-    public void submit(String fileName, final byte[] code, String[] args) throws IOException {
+    public Client submit(String fileName, final byte[] code, String[] args) throws IOException {
         if (setState(State.ATTACHED, State.SUBMITTING)) {
             try {
                 BTraceLogger.debugPrint("opening socket to " + port);
@@ -538,6 +569,7 @@ public class Client {
                 setState(State.SUBMITTING, State.RUNNING);
             }
         }
+        return this;
     }
 
     protected Channel newClientChannel(Socket sock, ExtensionsRepository extRepository) {

@@ -36,10 +36,11 @@ import net.java.btrace.api.wireio.ObjectInputStreamEx;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
+import java.io.ObjectOutput ;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.List;
+import net.java.btrace.api.wireio.Command;
 
 /**
  * The client side of the BTrace communication channel
@@ -55,7 +56,7 @@ public class ClientChannel extends SocketChannel {
 
     public static Channel open(Socket skt, ExtensionsRepository extRep) {
         try {
-            ObjectOutputStream oos = new ObjectOutputStream(skt.getOutputStream());
+            ObjectOutput  oos = new ObjectOutputStream(skt.getOutputStream());
             ObjectInputStream ois = new ObjectInputStreamEx(skt.getInputStream(), extRep.getClassLoader());
             
             ClientChannel ch = new ClientChannel(ois, oos, extRep);
@@ -130,6 +131,6 @@ public class ClientChannel extends SocketChannel {
     }
 
     protected CommandFactory newCommandFactory() {
-        return CommandFactory.getInstance(extRep.getClassLoader(getMyLoader()));
+        return CommandFactory.getInstance(extRep.getClassLoader(getMyLoader()), Command.Target.CLIENT);
     }
 }

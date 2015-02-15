@@ -31,18 +31,17 @@
                 <version>1.2.1</version>
                 <goals>
                     <goal>exec</goal>
-                    <goal>java</goal>
                 </goals>
                 <configuration>
                     <classpathScope>compile</classpathScope>
-                    <mainClass>net.java.btrace.client.Main</mainClass>
                     <executable>java</executable>
                     <arguments>
                         <argument>-classpath</argument>
                         <classpath/>
-                        <argument>net.java.btrace.client.Main</argument>
-                        <argument>${pid}</argument>
-                        <argument>${trace}</argument>
+                        <argument>net.java.btrace.client.Main1</argument>
+                        <argument>-debug</argument>
+<!--                        <argument>${pid}</argument>
+                        <argument>${trace}</argument>-->
                     </arguments>
                 </configuration>
             </plugin>
@@ -56,32 +55,47 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>core</artifactId>
-            <version>2.0-nimble-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>sun.jdk</groupId>
             <artifactId>tools</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>compiler</artifactId>
-            <version>2.0-nimble-SNAPSHOT</version>
+            <artifactId>jps-api</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>jline</groupId>
+            <artifactId>jline</artifactId>
+            <version>2.7</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jopt-simple</groupId>
+            <artifactId>jopt-simple</artifactId>
+            <version>4.3</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>client</artifactId>
-            <version>2.0-nimble-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>btrace-boot</artifactId>
+            <artifactId>core-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>btrace-agent</artifactId>
+            <artifactId>compiler</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>ext-default</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>ext-profiling</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -96,22 +110,17 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>ext-sys</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>ext-default</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>ext-export</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>ext-profiling</artifactId>
+            <artifactId>ext-sys</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>btrace-agent</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

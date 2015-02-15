@@ -22,8 +22,9 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package net.java.btrace.agent;
+package net.java.btrace.server;
 
+import net.java.btrace.api.server.Session;
 import net.java.btrace.runtime.BTraceRuntime;
 import net.java.btrace.api.core.BTraceLogger;
 import net.java.btrace.api.extensions.BTraceExtension;
@@ -45,7 +46,7 @@ import net.java.btrace.org.objectweb.asm.ClassVisitor;
 import net.java.btrace.org.objectweb.asm.ClassWriter;
 import net.java.btrace.org.objectweb.asm.Opcodes;
 import net.java.btrace.api.wireio.Channel;
-import net.java.btrace.agent.Session.State;
+import net.java.btrace.api.server.Session.State;
 import net.java.btrace.wireio.commands.ErrorCommand;
 import net.java.btrace.wireio.commands.ExitCommand;
 import net.java.btrace.wireio.commands.RetransformClassNotification;
@@ -53,17 +54,23 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
+import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Observer;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
-import net.java.btrace.runtime.ShutdownHandler;
+import net.java.btrace.api.extensions.ExtensionsRepository;
+import net.java.btrace.api.server.ShutdownHandler;
+import net.java.btrace.instr.ProbeDescriptor;
+import net.java.btrace.util.BTraceThreadFactory;
 
 /**
  *
@@ -71,13 +78,12 @@ import net.java.btrace.runtime.ShutdownHandler;
  */
 final public class SessionImpl extends Session implements ShutdownHandler {
 
-    final private static ExecutorService handlerPool = Executors.newCachedThreadPool();
-    final private Channel channel;
+    final private static ExecutorService handlerPool = Executors.newCachedThreadPool(new BTraceThreadFactory());
     private Future<?> cmdHandler;
-    
+
     private AtomicReference<State> state = new AtomicReference<State>(State.DISCONNECTED);
-    private Lookup cmdContext = new Lookup();
-    
+    private Lookup lookup = new Lookup();
+
     private String className;
     private volatile List<OnMethod> onMethods;
     private volatile List<OnProbe> onProbes;
@@ -88,7 +94,6 @@ final public class SessionImpl extends Session implements ShutdownHandler {
     private volatile byte[] btraceCode;
     private BTraceRuntime runtime;
     private Class btraceClazz;
-    private Server server;
     final private Set<String> instrumentedClasses = new HashSet<String>();
     final private ClassFileTransformer clInitTransformer = new ClassFileTransformer() {
 
@@ -164,21 +169,21 @@ final public class SessionImpl extends Session implements ShutdownHandler {
             }
         }
     };
-    
-    SessionImpl(Channel commChannel, Server server) throws IOException {
-        this.channel = commChannel;
-        this.server = server;
-        // FIXME
-        cmdContext.add(this);
-        cmdContext.add(commChannel);
-        
-        startCommandHandler();
+
+    SessionImpl(Object... ctx) throws IOException {
+        lookup.add(this);
+        lookup.add(ctx);
     }
-    
+
     State getState() {
         return state.get();
     }
-    
+
+    @Override
+    public void start() {
+        startCommandHandler();
+    }
+
     @Override
     public void event(String name) {
         runtime.handleEvent(name);
@@ -217,10 +222,13 @@ final public class SessionImpl extends Session implements ShutdownHandler {
                 capturedError = th;
                 return false;
             }
+
+            Instrumentation instr = getInstrumentation();
+
             BTraceLogger.dumpClass(className + "_proc", traceCode); // NOI18N
             SessionImpl.this.btraceCode = traceCode;
             BTraceLogger.debugPrint("creating BTraceRuntime instance for " + className); // NOI18N
-            SessionImpl.this.runtime = new BTraceRuntime(this, className, args, channel, server.getInstrumentation(), server.getExtensionRepository());
+            SessionImpl.this.runtime = new BTraceRuntime(this, className, args, getChannel(), instr, lookup.lookup(ExtensionsRepository.class));
             BTraceLogger.debugPrint("created BTraceRuntime instance for " + className); // NOI18N
             BTraceLogger.debugPrint("removing @OnMethod, @OnProbe methods"); // NOI18N
             byte[] codeBuf = removeMethods(traceCode);
@@ -253,12 +261,12 @@ final public class SessionImpl extends Session implements ShutdownHandler {
             }
             if (btraceClazz != null) {
                 if (shouldAddTransformer()) {
-                    server.getInstrumentation().addTransformer(traceTransformer, true);
-                    server.getInstrumentation().addTransformer(clInitTransformer, false);
+                    instr.addTransformer(traceTransformer, true);
+                    instr.addTransformer(clInitTransformer, false);
                 }
                 List<Class> clzs = new ArrayList<Class>();
-                for (Class clz : server.getInstrumentation().getAllLoadedClasses()) {
-                    if (server.getInstrumentation().isModifiableClass(clz)) {
+                for (Class clz : instr.getAllLoadedClasses()) {
+                    if (instr.isModifiableClass(clz)) {
                         if (clz.getAnnotation(BTraceExtension.class) != null || filter.isCandidate(clz)) {
                             clzs.add(clz);
                         }
@@ -266,7 +274,7 @@ final public class SessionImpl extends Session implements ShutdownHandler {
                 }
 
                 if (!clzs.isEmpty()) {
-                    server.getInstrumentation().retransformClasses(clzs.toArray(new Class[clzs.size()]));
+                    instr.retransformClasses(clzs.toArray(new Class[clzs.size()]));
                 }
             }
         } catch (UnmodifiableClassException e) {
@@ -292,7 +300,7 @@ final public class SessionImpl extends Session implements ShutdownHandler {
     public void shutdown(final int exitCode) {
         if (setState(State.CONNECTED, State.DISCONNECTING)) {
             try {
-                Response<Void> r = channel.sendCommand(ExitCommand.class, new AbstractCommand.Initializer<ExitCommand>() {
+                Response<Void> r = getChannel().sendCommand(ExitCommand.class, new AbstractCommand.Initializer<ExitCommand>() {
 
                     @Override
                     public void init(ExitCommand cmd) {
@@ -301,7 +309,7 @@ final public class SessionImpl extends Session implements ShutdownHandler {
                 });
                 try {
                     // wait for response
-                    r.get();
+                    r.get(500);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (Exception e) {
@@ -311,13 +319,12 @@ final public class SessionImpl extends Session implements ShutdownHandler {
             } catch (IOException e) {
                 BTraceLogger.debugPrint(e);
             } finally {
-                channel.close();
+                getChannel().close();
                 setState(State.DISCONNECTING, State.DISCONNECTED);
             }
         }
     }
-    
-    
+
     @Override
     public boolean detach(Runnable detachHook) {
         if (setState(State.CONNECTED, State.DISCONNECTING)) {
@@ -330,22 +337,23 @@ final public class SessionImpl extends Session implements ShutdownHandler {
         }
         return false;
     }
-    
+
     private void cleanup() {
         if (cmdHandler.cancel(true)) {
+            Instrumentation instr = getInstrumentation();
             if (shouldAddTransformer()) {
-                server.getInstrumentation().removeTransformer(traceTransformer);
-                server.getInstrumentation().removeTransformer(clInitTransformer);
+                instr.removeTransformer(traceTransformer);
+                instr.removeTransformer(clInitTransformer);
             }
             try {
                 List<Class> toRetransform = new ArrayList<Class>();
-                for(Class clz : server.getInstrumentation().getAllLoadedClasses()) {
+                for (Class clz : instr.getAllLoadedClasses()) {
                     if (instrumentedClasses.contains(clz.getName())) {
                         toRetransform.add(clz);
                     }
                 }
                 if (!toRetransform.isEmpty()) {
-                    server.getInstrumentation().retransformClasses(toRetransform.toArray(new Class[toRetransform.size()]));
+                    instr.retransformClasses(toRetransform.toArray(new Class[toRetransform.size()]));
                 }
             } catch (UnmodifiableClassException ex) {
                 BTraceLogger.debugPrint(ex);
@@ -365,7 +373,7 @@ final public class SessionImpl extends Session implements ShutdownHandler {
         setChanged();
         notifyObservers(oldState);
     }
-    
+
     private boolean setState(State expState, State newState) {
         if (state.compareAndSet(expState, newState)) {
             setChanged();
@@ -380,29 +388,36 @@ final public class SessionImpl extends Session implements ShutdownHandler {
         cmdHandler = handlerPool.submit(new Runnable() {
 
             public void run() {
+                Channel ch = getChannel();
                 while (!Thread.currentThread().isInterrupted()) {
                     try {
-                        AbstractCommand cmd = channel.readCommand();
+                        BTraceLogger.debugPrint("SERVER: Reading command");
+                        AbstractCommand cmd = ch.readCommand();
+                        BTraceLogger.debugPrint("Command: " + cmd);
                         if (cmd != null) {
-                            cmd.execute(cmdContext);
+                            try {
+                                cmd.execute(lookup);
+                            } catch (Throwable t) {
+                                BTraceLogger.debugPrint(t);
+                            }
                         } else {
                             break;
                         }
                     } catch (ClassNotFoundException e) {
                         BTraceLogger.debugPrint(e);
                         detach();
-                        channel.close();
+                        ch.close();
                         break;
                     } catch (EOFException e) {
                         if (getState() == State.CONNECTED) {
                             detach();
-                            channel.close();
+                            ch.close();
                         }
                         break;
                     } catch (IOException e) {
                         BTraceLogger.debugPrint(e);
                         detach();
-                        channel.close();
+                        ch.close();
                         break;
                     }
                 }
@@ -412,7 +427,8 @@ final public class SessionImpl extends Session implements ShutdownHandler {
 
     private void verify(byte[] buf) {
         ClassReader reader = new ClassReader(buf);
-        Verifier verifier = new Verifier(new ClassVisitor(Opcodes.ASM4){}, server.getSetting().unsafeMode, server.getExtensionRepository());
+        Verifier verifier = new Verifier(new ClassVisitor(Opcodes.ASM4) {
+        }, server.getSetting().unsafeMode, lookup.lookup(ExtensionsRepository.class));
         BTraceLogger.debugPrint("verifying BTrace class"); // NOI18N
         InstrumentUtils.accept(reader, verifier);
         className = verifier.getClassName().replace('/', '.');
@@ -421,7 +437,7 @@ final public class SessionImpl extends Session implements ShutdownHandler {
         onProbes = verifier.getOnProbes();
         if (onProbes != null && !onProbes.isEmpty()) {
             // map @OnProbe's to @OnMethod's and store
-            onMethods.addAll(Main.mapOnProbes(onProbes));
+            onMethods.addAll(mapOnProbes(onProbes));
         }
         for (OnMethod om : onMethods) {
             if (om.getClazz().startsWith("+")) {
@@ -429,6 +445,47 @@ final public class SessionImpl extends Session implements ShutdownHandler {
                 break;
             }
         }
+    }
+
+    /**
+     * Maps a list of @OnProbe's to a list @OnMethod's using probe descriptor
+     * XML files.
+     */
+    private static List<OnMethod> mapOnProbes(List<OnProbe> onProbes) {
+        List<OnMethod> res = new ArrayList<OnMethod>();
+        for (OnProbe op : onProbes) {
+            String ns = op.getNamespace();
+            BTraceLogger.debugPrint("about to load probe descriptor for " + ns);
+
+            // load probe descriptor for this namespace
+            ProbeDescriptor probeDesc = ProbeDescriptorLoader.load(ns);
+            if (probeDesc == null) {
+                BTraceLogger.debugPrint("failed to find probe descriptor for " + ns);
+                continue;
+            }
+            // find particular probe mappings using "local" name
+            OnProbe foundProbe = probeDesc.findProbe(op.getName());
+            if (foundProbe == null) {
+                BTraceLogger.debugPrint("no probe mappings for " + op.getName());
+                continue;
+            }
+            BTraceLogger.debugPrint("found probe mappings for " + op.getName());
+
+            Collection<OnMethod> omColl = foundProbe.getOnMethods();
+            for (OnMethod om : omColl) {
+                // copy the info in a new OnMethod so that
+                // we can set target method name and descriptor
+                // Note that the probe descriptor cache is used
+                // across BTrace sessions. So, we should not update
+                // cached OnProbes (and their OnMethods).
+                OnMethod omn = new OnMethod();
+                omn.copyFrom(om);
+                omn.setTargetName(op.getTargetName());
+                omn.setTargetDescriptor(op.getTargetDescriptor());
+                res.add(omn);
+            }
+        }
+        return res;
     }
 
     private boolean shouldAddTransformer() {
@@ -444,7 +501,7 @@ final public class SessionImpl extends Session implements ShutdownHandler {
 
     private void errorExit(final Throwable th) throws IOException {
         BTraceLogger.debugPrint("sending error command"); // NOI18N
-        channel.sendCommand(ErrorCommand.class, new AbstractCommand.Initializer<ErrorCommand>() {
+        getChannel().sendCommand(ErrorCommand.class, new AbstractCommand.Initializer<ErrorCommand>() {
 
             @Override
             public void init(ErrorCommand cmd) {
@@ -454,7 +511,7 @@ final public class SessionImpl extends Session implements ShutdownHandler {
 
         /*
         BTraceLogger.debugPrint("sending exit command"); // NOI18N
-        Response<Void> r = channel.sendCommand(ExitCommand.class, new AbstractCommand.Initializer<ExitCommand>() {
+        Response<Void> r = getChannel().sendCommand(ExitCommand.class, new AbstractCommand.Initializer<ExitCommand>() {
 
             @Override
             public void init(ExitCommand cmd) {
@@ -471,7 +528,7 @@ final public class SessionImpl extends Session implements ShutdownHandler {
     }
 
     private static boolean isBTraceClass(String name) {
-        return name.startsWith("net/java/btrace"); // NOI18N
+        return name != null ? name.startsWith("net/java/btrace") : false; // NOI18N
     }
 
     /*
@@ -484,7 +541,8 @@ final public class SessionImpl extends Session implements ShutdownHandler {
      * For now, we avoid such classes till we find a solution.
      */
     private static boolean isSensitiveClass(String name) {
-        return name.equals("java/lang/Object") || // NOI18N
+        return name == null ||
+                name.equals("java/lang/Object") || // NOI18N
                 name.startsWith("java/lang/ThreadLocal") || // NOI18N
                 name.startsWith("sun/reflect") || // NOI18N
                 name.equals("sun/misc/Unsafe") || // NOI18N
@@ -496,7 +554,7 @@ final public class SessionImpl extends Session implements ShutdownHandler {
         BTraceLogger.debugPrint("client " + className + ": instrumenting " + cname); // NOI18N
         if (trackRetransforms) {
             try {
-                channel.sendCommand(RetransformClassNotification.class, new AbstractCommand.Initializer<RetransformClassNotification>() {
+                getChannel().sendCommand(RetransformClassNotification.class, new AbstractCommand.Initializer<RetransformClassNotification>() {
 
                     @Override
                     public void init(RetransformClassNotification cmd) {
@@ -530,5 +588,13 @@ final public class SessionImpl extends Session implements ShutdownHandler {
         }
         BTraceLogger.dumpClass(cname, instrumentedCode);
         return instrumentedCode;
+    }
+
+    private Instrumentation getInstrumentation() {
+        return lookup.lookup(Instrumentation.class);
+    }
+
+    private Channel getChannel() {
+        return lookup.lookup(Channel.class);
     }
 }

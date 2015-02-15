@@ -14,13 +14,15 @@ import net.java.btrace.api.wireio.Channel;
 import net.java.btrace.wireio.commands.ExitCommand;
 import java.io.IOException;
 import java.io.PrintWriter;
+import net.java.btrace.wireio.commands.ACKCommand;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-@Command(clazz=ExitCommand.class)
+@Command(clazz = ExitCommand.class, target = Command.Target.CLIENT)
 public class ExitCommandImpl extends CommandImpl<ExitCommand> {
+    @Override
     public void execute(Lookup ctx, ExitCommand cmd) {
         PrintWriter pw = ctx.lookup(PrintWriter.class);
         if (pw != null) {
@@ -33,7 +35,7 @@ public class ExitCommandImpl extends CommandImpl<ExitCommand> {
             try {
                 Channel ch = ctx.lookup(Channel.class);
                 if (ch != null) {
-                    ch.sendResponse(cmd, null);
+                    ch.sendResponse(cmd, ACKCommand.class, true);
                 }
             } catch (IOException e) {
                 BTraceLogger.debugPrint(e);

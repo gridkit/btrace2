@@ -44,5 +44,5 @@ public class MessageCommandImpl extends CommandImpl<MessageCommand> {
             pw.print(cmd.getMessage());
             pw.flush();
         }
-    }   
+    }
 }

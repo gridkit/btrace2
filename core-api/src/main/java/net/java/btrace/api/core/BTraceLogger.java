@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import net.java.btrace.api.server.Server;
 
 /**
  *
@@ -41,6 +42,11 @@ final public class BTraceLogger {
 
     private static volatile boolean dumpClasses = Boolean.getBoolean("net.java.btrace.dumpClasses");
     private static volatile String dumpDir = System.getProperty("net.java.btrace.dumpDir", ".");
+
+    public static void config(Server.Settings settings) {
+        // artem.panasyuk: inspect where it's called
+        isDebug = settings.debugMode || Boolean.getBoolean("net.java.btrace.debug");
+    }
 
     public static void useSlf4j(boolean useSlf4j) {
         BTraceLogger.useSlf4j = useSlf4j;
@@ -61,7 +67,11 @@ final public class BTraceLogger {
     public static boolean isDebug() {
         return debug;
     }
-    
+
+    public static boolean isDumpClasses() {
+        return dumpClasses;
+    }
+
     public static void debugPrint(String msg) {
         if (useSlf4j) {
             LoggerFactory.getLogger(BTRACE_LOGGER_NAME).debug(msg);
@@ -71,7 +81,7 @@ final public class BTraceLogger {
             }
         }
     }
-    
+
     public static void debugPrint(Throwable th) {
         if (useSlf4j) {
             LoggerFactory.getLogger(BTRACE_LOGGER_NAME).error(th.toString(), th);
@@ -82,7 +92,7 @@ final public class BTraceLogger {
             }
         }
     }
-    
+
     public static void dumpClass(String className, byte[] code) {
         if (dumpClasses) {
             try {
@@ -117,5 +127,9 @@ final public class BTraceLogger {
                 exp.printStackTrace();
             }
         }
+    }
+
+    private static String getDumpDir() {
+        return dumpDir;
     }
 }

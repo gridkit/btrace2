@@ -38,9 +38,19 @@ import net.java.btrace.spi.wireio.CommandImpl;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Command {
+    public static enum Target {
+        CLIENT, SERVER, BOTH
+    }
+
     /**
      * The command type to implement
      * @return A subclass of {@linkplain AbstractCommand} representing the command type
      */
     Class<? extends AbstractCommand> clazz();
+
+    /**
+     *
+     * @return
+     */
+    Target target() default Target.BOTH;
 }

@@ -22,7 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package net.java.btrace.agent.wireio;
+package net.java.btrace.server.wireio;
 
 import net.java.btrace.api.extensions.ExtensionsRepository;
 import net.java.btrace.api.wireio.AbstractCommand;
@@ -30,20 +30,24 @@ import net.java.btrace.api.wireio.CommandFactory;
 import net.java.btrace.api.wireio.Channel;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
+import net.java.btrace.api.core.BTraceLogger;
+import net.java.btrace.api.wireio.Command;
+import net.java.btrace.api.wireio.ResponseCommand;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
 abstract public class LocalChannel extends Channel {
-    private BlockingQueue<AbstractCommand> in, out;
-    
+    private final BlockingQueue<AbstractCommand> in, out;
+
     public static class Client extends LocalChannel {
-        private CommandFactory cFactory;
-        
+        private final CommandFactory cFactory;
+
         public Client(BlockingQueue<AbstractCommand> in, BlockingQueue<AbstractCommand> out, ExtensionsRepository extRep) {
             super(in, out);
-            cFactory = CommandFactory.getInstance(extRep.getClassLoader(getMyLoader()));
+            cFactory = CommandFactory.getInstance(extRep.getClassLoader(getMyLoader()), Command.Target.SERVER);
+            init();
         }
 
         @Override
@@ -51,12 +55,13 @@ abstract public class LocalChannel extends Channel {
             return cFactory;
         }
     }
-    
+
     public static class Server extends LocalChannel {
         private CommandFactory cFactory;
         public Server(BlockingQueue<AbstractCommand> in, BlockingQueue<AbstractCommand> out, ExtensionsRepository extRep) {
             super(in, out);
-            cFactory = CommandFactory.getInstance(extRep.getClassLoader(getMyLoader()));
+            cFactory = CommandFactory.getInstance(extRep.getClassLoader(getMyLoader()), Command.Target.SERVER);
+            init();
         }
 
         @Override
@@ -64,16 +69,16 @@ abstract public class LocalChannel extends Channel {
             return cFactory;
         }
     }
-    
+
     private LocalChannel(BlockingQueue<AbstractCommand> in, BlockingQueue<AbstractCommand> out) {
         super(in != null && out != null);
         assert in != null;
         assert out != null;
-                
+
         this.in = in;
         this.out = out;
     }
-        
+
     @Override
     public void doClose() {
         // noop
@@ -82,7 +87,15 @@ abstract public class LocalChannel extends Channel {
     @Override
     final public AbstractCommand readCommand() throws IOException, ClassNotFoundException {
         try {
-            return in.take();
+            AbstractCommand cmd;
+            while (true) {
+                cmd = in.take();
+                if (cmd instanceof ResponseCommand) { // implicitly process the response
+                    responseReceived((ResponseCommand)cmd);
+                    continue;
+                }
+                return cmd;
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -97,5 +110,5 @@ abstract public class LocalChannel extends Channel {
             Thread.currentThread().interrupt();
         }
     }
-    
+
 }

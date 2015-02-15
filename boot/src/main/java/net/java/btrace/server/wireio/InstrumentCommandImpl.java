@@ -22,16 +22,17 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package net.java.btrace.agent.wireio;
+package net.java.btrace.server.wireio;
 
 import net.java.btrace.api.core.BTraceLogger;
 import net.java.btrace.api.wireio.Command;
 import net.java.btrace.api.core.Lookup;
 import net.java.btrace.spi.wireio.CommandImpl;
 import net.java.btrace.api.wireio.Channel;
-import net.java.btrace.agent.Session;
+import net.java.btrace.api.server.Session;
 import net.java.btrace.wireio.commands.InstrumentCommand;
 import java.io.IOException;
+import net.java.btrace.wireio.commands.ACKCommand;
 
 /**
  *
@@ -46,13 +47,13 @@ public class InstrumentCommandImpl extends CommandImpl<InstrumentCommand> {
         if (s != null && ch != null) {
             try {
                 try {
-                    ch.sendResponse(cmd, s.loadTraceClass(cmd.getCode(), cmd.getArguments()));
+                    ch.sendResponse(cmd, ACKCommand.class, s.loadTraceClass(cmd.getCode(), cmd.getArguments()));
                 } catch (IOException e) {
                     BTraceLogger.debugPrint(e);
                 }
-            } catch (Exception e) {                
+            } catch (Exception e) {
                 try {
-                    ch.sendResponse(cmd, false);
+                    ch.sendResponse(cmd, ACKCommand.class, false);
                 } catch (IOException ioe) {
                     BTraceLogger.debugPrint(ioe);
                 }

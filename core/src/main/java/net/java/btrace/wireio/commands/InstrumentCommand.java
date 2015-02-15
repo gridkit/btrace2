@@ -27,8 +27,8 @@ package net.java.btrace.wireio.commands;
 
 import net.java.btrace.api.wireio.AbstractCommand;
 import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.io.IOException;
+import java.io.ObjectOutput;
 
 /**
  * Transfer an instrumentation request
@@ -39,7 +39,7 @@ final public class InstrumentCommand extends AbstractCommand {
     final private static String[] EMPTY_ARGS = new String[0];
     private byte[] code = new byte[0];
     private String[] args = EMPTY_ARGS;
-    
+
     public InstrumentCommand(int typeId, int rx, int tx) {
         super(typeId, rx, tx);
     }
@@ -54,15 +54,19 @@ final public class InstrumentCommand extends AbstractCommand {
         return true;
     }
 
-    final public void write(ObjectOutput out) throws IOException {       
-        out.writeInt(code.length);
-        out.write(code);
-        out.writeInt(args.length);
-        for (String a : args) {
-            out.writeUTF(a);
+    @Override
+    final public void write(ObjectOutput out) throws IOException {
+        out.writeInt(code != null ? code.length : 0);
+        out.write(code != null ? code : new byte[0]);
+        out.writeInt(args != null ? args.length : 0);
+        if (args != null) {
+            for (String a : args) {
+                out.writeUTF(a);
+            }
         }
     }
 
+    @Override
     final public void read(ObjectInput in) throws IOException {
         int len = in.readInt();
         code = new byte[len];

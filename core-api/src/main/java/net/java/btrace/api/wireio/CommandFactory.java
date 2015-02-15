@@ -48,9 +48,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class CommandFactory {
     private static class FactoryMethod<T extends AbstractCommand> {
         private CommandImpl<T> impl;
-        private Constructor<T> constructor;
+        private final Constructor<T> constructor;
         private static Field implFld;
-        private int type;
+        private final int type;
 
         static {
             try {
@@ -68,18 +68,18 @@ public class CommandFactory {
                 implFld = null;
             }
         }
-        
+
         public FactoryMethod(CommandImpl<T> impl, Constructor<T> constructor, int type) {
-            this.impl = impl;
             this.constructor = constructor;
             this.type = type;
             this.constructor.setAccessible(true);
+            updateImpl(impl);
         }
-        
+
         private void updateImpl(CommandImpl<T> impl) {
             this.impl = impl;
         }
-        
+
         public T newInstance(int rx, int tx) {
             try {
                 T instance = constructor.newInstance(type, rx, tx);
@@ -99,25 +99,27 @@ public class CommandFactory {
             return null;
         }
     }
-    
-    private Map<Integer, FactoryMethod> mapById = new HashMap();
-    private Map<Class<? extends AbstractCommand>, FactoryMethod> mapByType = new WeakHashMap();
-    
+
+    private final Map<Integer, FactoryMethod> mapById = new HashMap();
+    private final Map<Class<? extends AbstractCommand>, FactoryMethod> mapByType = new WeakHashMap();
+
     private List<Class<? extends AbstractCommand>> supportedCommands = null;
-    
+
     private int lastTypeId = 0;
     final private static int MAX_SEQ_NR = 100000;
-    private AtomicInteger rxCntr = new AtomicInteger(0);
-    
-    private CommandFactory(Iterable<CommandImpl> svcs) throws NoSuchMethodException {
-        this(Collections.EMPTY_MAP, svcs);
+    private final AtomicInteger rxCntr = new AtomicInteger(0);
+    private final Command.Target target;
+
+    private CommandFactory(Iterable<CommandImpl> svcs, Command.Target target) throws NoSuchMethodException {
+        this(Collections.EMPTY_MAP, svcs, target);
     }
-    
-    private CommandFactory(Class<? extends AbstractCommand>[] mapping, Iterable<CommandImpl> svcs) throws NoSuchMethodException {
-        this(createMapper(mapping), svcs);
+
+    private CommandFactory(Class<? extends AbstractCommand>[] mapping, Iterable<CommandImpl> svcs, Command.Target target) throws NoSuchMethodException {
+        this(createMapper(mapping), svcs, target);
     }
-    
-    private CommandFactory(Map<Class<? extends AbstractCommand>, Integer> mapper, Iterable<CommandImpl> svcs) throws NoSuchMethodException {
+
+    private CommandFactory(Map<Class<? extends AbstractCommand>, Integer> mapper, Iterable<CommandImpl> svcs, Command.Target target) throws NoSuchMethodException {
+        this.target = target;
         copyInitialMapper(mapper);
         applyMapper(svcs, mapper);
     }
@@ -125,8 +127,13 @@ public class CommandFactory {
     private void applyMapper(Iterable<CommandImpl> svcs, Map<Class<? extends AbstractCommand>, Integer> mapper) throws SecurityException, NoSuchMethodException {
         int cnt = lastTypeId;
         for(CommandImpl svc : svcs) {
+            if (svc == null) continue;
+
             Command ann = svc.getClass().getAnnotation(Command.class);
             if (ann != null) {
+                if (ann.target() != Command.Target.BOTH &&
+                    ann.target() != target) continue;
+
                 Class<? extends AbstractCommand> cmdClz = ann.clazz();
                 if (!mapByType.containsKey(cmdClz)) {
                     Constructor<? extends AbstractCommand> constructor = cmdClz.getDeclaredConstructor(int.class, int.class, int.class);
@@ -136,7 +143,7 @@ public class CommandFactory {
                     if (cmdId == null) {
                         cmdId = cnt++;
                     }
-                    FactoryMethod fm = new FactoryMethod(svc, constructor, cmdId); 
+                    FactoryMethod fm = new FactoryMethod(svc, constructor, cmdId);
                     mapById.put(cmdId, fm);
                     mapByType.put(cmdClz, fm);
 
@@ -159,35 +166,37 @@ public class CommandFactory {
             mapByType.put(mapping.getKey(), fm);
         }
     }
-    
+
     /**
      * Creates a factory with the given classloader
      * @param cl The {@linkplain ClassLoader} to use
+     * @param target Specifies whether this factory applies to Server or Client commands
      * @return Returns a new instance of {@linkplain CommandFactory} or <b>NULL</b>
      */
-    public static CommandFactory getInstance(ClassLoader cl) {
+    public static CommandFactory getInstance(ClassLoader cl, Command.Target target) {
         try {
             Iterable<CommandImpl> rslt = ServiceLocator.listServices(CommandImpl.class, cl);
             if (rslt != null) {
-                return new CommandFactory(rslt);
+                return new CommandFactory(rslt, target);
             }
         } catch (NoSuchMethodException e) {
         }
         return null;
     }
-    
+
     /**
      * Creates a factory with the given classloader and a custom command implementation mapping
      * @param mapping The command implementation mapping list; the position is the key
      * @param cl The {@linkplain ClassLoader} to use
+     * @param target Specifies whether this factory applies to Server or Client commands
      * @return Returns a new instance of {@linkplain CommandFactory} or <b>NULL</b>
      */
-    public static CommandFactory getInstance(Class<? extends AbstractCommand>[] mapping, ClassLoader cl) {
+    public static CommandFactory getInstance(Class<? extends AbstractCommand>[] mapping, ClassLoader cl, Command.Target target) {
         ServiceLocator.listServiceNames(CommandImpl.class, cl);
         try {
             Iterable<CommandImpl> rslt = ServiceLocator.listServices(CommandImpl.class, cl);
             if (rslt != null) {
-                return new CommandFactory(mapping, rslt);
+                return new CommandFactory(mapping, rslt, target);
             }
         } catch (NoSuchMethodException e) {
         }
@@ -216,7 +225,7 @@ public class CommandFactory {
         }
         return supportedCommands;
     }
-    
+
     /**
      * Creates a new command of <b>&lt;T&gt;</b> type with an appropriate handler.
      * @param <T> Type parameter for the command type
@@ -231,24 +240,25 @@ public class CommandFactory {
         }
         return null;
     }
-    
+
     /**
      * Creates a new response of <b>&lt;T&gt;</b> type with an appropriate handler.
      * @param <T> Type parameter for the response type
      * @param data The response type class
+     * @param clz The command class
      * @param tx The TX value of the command to create the response for
      * @return A new instance of <b>&lt;T&gt;</b> or <b>NULL</b> if the factory can not handle this type
      */
-    public <T> ResponseCommand<T> createResponse(T data, int tx) {
-        FactoryMethod<ResponseCommand<T>> fm = mapByType.get(ResponseCommand.class);
+    public <T> DataCommand<T> createResponse(T data, Class<? extends DataCommand<T>> clz, int tx) {
+        FactoryMethod<DataCommand<T>> fm = mapByType.get(clz);
         if (fm != null) {
-            ResponseCommand<T> cmd = fm.newInstance(incCounter(), tx);
+            DataCommand<T> cmd = fm.newInstance(incCounter(), tx);
             cmd.setPayload(data);
             return cmd;
         }
         return null;
     }
-    
+
     private int incCounter() {
         int cntr = rxCntr.getAndIncrement();
         if (cntr == MAX_SEQ_NR) {
@@ -256,10 +266,10 @@ public class CommandFactory {
         }
         return cntr;
     }
-    
+
     /**
      * Restores the deserialized command
-     * 
+     *
      * @param type The command type id
      * @param rx The command RX
      * @param tx The command TX
@@ -272,20 +282,20 @@ public class CommandFactory {
         }
         return null;
     }
-    
+
     /**
      * Allows for ad-hoc addition of command type mappers
-     * @param mapping The command implementation mapping list; the position is the key 
+     * @param mapping The command implementation mapping list; the position is the key
      */
     public void addMapper(Class<? extends AbstractCommand>[] mapping) {
         int cnt = lastTypeId;
         for(Class<? extends AbstractCommand> cmdClz : mapping) {
             if (cmdClz == null) continue;
-            
+
             try {
                 Constructor<? extends AbstractCommand> constructor = cmdClz.getDeclaredConstructor(int.class, int.class, int.class);
                 constructor.setAccessible(true);
-                
+
                 int id = cnt++;
                 FactoryMethod fm = new FactoryMethod(CommandImpl.NULL, constructor, id);
                 mapById.put(cnt, fm);
@@ -298,10 +308,10 @@ public class CommandFactory {
         }
         lastTypeId = cnt;
     }
-    
+
     private static Map<Class<? extends AbstractCommand>, Integer> createMapper(Class<? extends AbstractCommand>[] mapping) {
         Map<Class<? extends AbstractCommand>, Integer> tmpMap = new WeakHashMap<Class<? extends AbstractCommand>, Integer>();
-        
+
         for(int i=0;i<mapping.length;i++) {
             tmpMap.put(mapping[i], i);
         }

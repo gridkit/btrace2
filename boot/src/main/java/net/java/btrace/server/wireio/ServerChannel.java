@@ -22,7 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package net.java.btrace.agent.wireio;
+package net.java.btrace.server.wireio;
 
 import net.java.btrace.api.core.BTraceLogger;
 import net.java.btrace.api.extensions.ExtensionsRepository;
@@ -35,10 +35,11 @@ import net.java.btrace.api.wireio.Version;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
+import java.io.ObjectOutput ;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.List;
+import net.java.btrace.api.wireio.Command;
 
 /**
  *
@@ -46,14 +47,14 @@ import java.util.List;
  */
 public final class ServerChannel extends SocketChannel {
 
-    protected ServerChannel(ObjectInput oi, ObjectOutput oo, ExtensionsRepository extRep) {
+    protected ServerChannel(ObjectInput oi, ObjectOutput  oo, ExtensionsRepository extRep) {
         super(oi, oo, extRep);
     }
 
     public static Channel open(Socket skt, final ExtensionsRepository extRep) {
         try {
             ObjectInputStream ois = new ObjectInputStreamEx(skt.getInputStream(), extRep.getClassLoader());
-            ObjectOutputStream oos = new ObjectOutputStream(skt.getOutputStream());
+            ObjectOutput  oos = new ObjectOutputStream(skt.getOutputStream());
             ServerChannel ch = new ServerChannel(ois, oos, extRep);
             if (!ch.handshake()) {
                 try {
@@ -90,7 +91,7 @@ public final class ServerChannel extends SocketChannel {
                             Class cmdClz = Class.forName(cmdClass);
                             mapper[i] = cmdClz;
                         }
-                        CommandFactory cf = CommandFactory.getInstance(mapper, extRep.getClassLoader(getMyLoader()));
+                        CommandFactory cf = CommandFactory.getInstance(mapper, extRep.getClassLoader(getMyLoader()), Command.Target.SERVER);
                         List<Class<? extends AbstractCommand>> cmds  = cf.listSupportedCommands();
                         output.writeInt(cmds.size() - commandCnt);
                         for(int i=commandCnt;i<cmds.size();i++) {
