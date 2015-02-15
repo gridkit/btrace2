@@ -45,7 +45,7 @@ final public class BTraceLogger {
 
     public static void config(Server.Settings settings) {
         // artem.panasyuk: inspect where it's called
-        isDebug = settings.debugMode || Boolean.getBoolean("net.java.btrace.debug");
+        debug = settings.debugMode || Boolean.getBoolean("net.java.btrace.debug");
     }
 
     public static void useSlf4j(boolean useSlf4j) {

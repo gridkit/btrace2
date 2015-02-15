@@ -26,6 +26,7 @@ package net.java.btrace.server;
 
 import net.java.btrace.api.server.Session;
 import net.java.btrace.runtime.BTraceRuntime;
+import net.java.btrace.spi.server.ServerImpl;
 import net.java.btrace.api.core.BTraceLogger;
 import net.java.btrace.api.extensions.BTraceExtension;
 import net.java.btrace.api.wireio.AbstractCommand;
@@ -50,6 +51,7 @@ import net.java.btrace.api.server.Session.State;
 import net.java.btrace.wireio.commands.ErrorCommand;
 import net.java.btrace.wireio.commands.ExitCommand;
 import net.java.btrace.wireio.commands.RetransformClassNotification;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
@@ -67,6 +69,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
+
 import net.java.btrace.api.extensions.ExtensionsRepository;
 import net.java.btrace.api.server.ShutdownHandler;
 import net.java.btrace.instr.ProbeDescriptor;
@@ -428,7 +431,7 @@ final public class SessionImpl extends Session implements ShutdownHandler {
     private void verify(byte[] buf) {
         ClassReader reader = new ClassReader(buf);
         Verifier verifier = new Verifier(new ClassVisitor(Opcodes.ASM4) {
-        }, server.getSetting().unsafeMode, lookup.lookup(ExtensionsRepository.class));
+        }, lookup.lookup(ServerImpl.class).getSettings().unsafeMode, lookup.lookup(ExtensionsRepository.class));
         BTraceLogger.debugPrint("verifying BTrace class"); // NOI18N
         InstrumentUtils.accept(reader, verifier);
         className = verifier.getClassName().replace('/', '.');

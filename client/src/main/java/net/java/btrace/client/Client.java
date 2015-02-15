@@ -486,12 +486,12 @@ public class Client {
         return this;
     }
 
-    protected int getServerPort() throws Exception {
+    protected int getServerPort() throws IOException {
         // artem.panasyuk: possibly should use agent properties
         return Integer.parseInt(vm.getSystemProperties().getProperty("btrace.port", "-1"));
     }
 
-    protected void loadAgent(String agentPath, String agentArgs) throws Exception {
+    protected void loadAgent(String agentPath, String agentArgs) throws AgentLoadException, AgentInitializationException, IOException {
         vm.loadAgent(agentPath, agentArgs);
     }
 

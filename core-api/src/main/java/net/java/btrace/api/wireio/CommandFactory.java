@@ -203,9 +203,9 @@ public class CommandFactory {
         return null;
     }
 
-    public static CommandFactory getInstance(Iterable<CommandImpl> svcs) {
+    public static CommandFactory getInstance(Iterable<CommandImpl> svcs, Command.Target target) {
         try {
-            return new CommandFactory(svcs);
+            return new CommandFactory(svcs, target);
         } catch (NoSuchMethodException e) {
         }
         return null;
