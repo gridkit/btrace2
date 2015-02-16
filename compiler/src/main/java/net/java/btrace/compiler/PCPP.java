@@ -56,6 +56,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.java.btrace.api.core.BTraceLogger;
+
 /** 
  * A minimal pseudo-C-preprocessor derived from PCPP of the GlueGen project.
  * 
@@ -155,7 +157,7 @@ public class PCPP {
 
             new PCPP(includePaths).run(reader, filename);
         } catch (IOException e) {
-            e.printStackTrace();
+            BTraceLogger.debugPrint(e);
         }
     }
 

@@ -349,7 +349,7 @@ public class Compiler {
             }
             return result;
         } catch (Throwable t) {
-            t.printStackTrace();
+            BTraceLogger.debugPrint(t);
             return null;
         } finally {
             try {
@@ -371,7 +371,7 @@ public class Compiler {
                 os = new FileOutputStream(f);
                 os.write(code);
             } catch (IOException e) {
-                e.printStackTrace();
+                BTraceLogger.debugPrint(e);
             } finally {
                 if (os != null) {
                     try {

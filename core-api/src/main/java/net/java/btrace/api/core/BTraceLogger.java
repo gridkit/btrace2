@@ -43,11 +43,16 @@ final public class BTraceLogger {
     private static volatile boolean dumpClasses = Boolean.getBoolean("net.java.btrace.dumpClasses");
     private static volatile String dumpDir = System.getProperty("net.java.btrace.dumpDir", ".");
 
-    // TODO artem.panasyul: remove static variables and make singleton
-    public static void config(Server.Settings settings) {
-        debug = settings.debugMode || debug;
-        dumpClasses = settings.dumpClasses || dumpClasses;
-        dumpDir = settings.dumpDir == null ? dumpDir : settings.dumpDir;
+    // for only single time configuration via config()
+    private static boolean configured = false;
+
+    public static synchronized void config(Server.Settings settings) {
+        if (!configured) {
+            debug = settings.debugMode || debug;
+            dumpClasses = settings.dumpClasses || dumpClasses;
+            dumpDir = settings.dumpDir == null ? dumpDir : settings.dumpDir;
+            configured = true;
+        }
     }
 
     public static void useSlf4j(boolean useSlf4j) {

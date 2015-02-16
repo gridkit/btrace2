@@ -247,7 +247,7 @@ public class ServiceLocator {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            BTraceLogger.debugPrint(e);
         } finally {
             try {
                 is.close();

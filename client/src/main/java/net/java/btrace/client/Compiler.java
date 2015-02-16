@@ -65,7 +65,7 @@ public class Compiler {
                 }
                 BTraceLogger.debugPrint("read " + fileName);
             } catch (IOException exp) {
-                exp.printStackTrace();
+                BTraceLogger.debugPrint(exp);
                 writer.println(exp.getMessage());
                 return null;
             }

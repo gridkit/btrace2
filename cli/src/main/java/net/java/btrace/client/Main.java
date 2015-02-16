@@ -339,7 +339,7 @@ public final class Main {
             BTraceLogger.debugPrint("submitting the BTrace program");
             client.submit(fileName, code, args);
         } catch (Exception exp) {
-            exp.printStackTrace();
+            BTraceLogger.debugPrint(exp);
             errorExit(exp.getMessage(), 1);
         }
     }
@@ -382,7 +382,7 @@ public final class Main {
             clearHdl.invoke(signalsObj);
             clearHdl.invoke(handlersObj);
         } catch (Exception e) {
-            e.printStackTrace();
+            BTraceLogger.debugPrint(e);
         }
         
         BTraceLogger.debugPrint("registering signal handler for SIGINT");
