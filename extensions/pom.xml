@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>btrace-parent</artifactId>
-        <groupId>net.java.btrace</groupId>
+        <groupId>org.gridkit.3rd.btrace</groupId>
         <version>2.0-nimble-SNAPSHOT</version>
         <relativePath>../btrace-parent</relativePath>
     </parent>
-    <groupId>net.java.btrace</groupId>
+    <groupId>org.gridkit.3rd.btrace</groupId>
     <artifactId>extensions</artifactId>
     <packaging>pom</packaging>
     <name>extensions</name>

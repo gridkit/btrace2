@@ -1,31 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.gridkit.lab</groupId>
+    <artifactId>grid-lab-pom</artifactId>
+    <version>2</version>
+  </parent>
+
+    <groupId>org.gridkit.3rd.btrace</groupId>
     <artifactId>btrace-all</artifactId>
-    <groupId>net.java.btrace</groupId>
     <version>2.0-nimble-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>btrace-all</name>
 
-<!--    <parent>
-       	<groupId>net.java</groupId>
-       	<artifactId>jvnet-parent</artifactId>
-       	<version>3</version>
-    </parent>-->
+    <issueManagement>
+        <system>JIRA</system>
+        <url>http://kenai.com/jira/browse/BTRACE</url>
+    </issueManagement> 
 
-<!--    <repositories>
-        <repository>
-            <id>java.net-Public</id>
-            <name>Maven Java Net Snapshots and Releases</name>
-            <url>https://maven.java.net/content/groups/public/</url>
-        </repository>
-    </repositories>-->
+    <licenses>
+        <license>
+            <name>GPLv2 /w Classpath Exception</name>
+            <url>http://kenai.com/projects/btrace/downloads/download/LICENSE.txt</url>
+        </license>
+    </licenses>
 
-    <scm>
-        <connection>scm:hg:http://hg.kenai.com/hg/btrace~hg</connection>
-        <developerConnection>scm:hg:https://hg.kenai.com/hg/btrace~hg</developerConnection>
-        <url>http://kenai.com/projects/btrace/sources/hg/show</url>
-    </scm>
+  <developers>
+    <developer>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:https://github.com/gridkit/btrace2.git</connection>
+    <developerConnection>scm:git:https://github.com/gridkit/btrace2.git</developerConnection>
+    <url>https://github.com/gridkit/btrace2</url>
+    <tag>HEAD</tag>
+  </scm>
 
     <modules>
         <module>btrace-parent</module>
@@ -33,13 +44,13 @@
         <module>core-api</module>
         <module>runtime</module>
         <module>client</module>
-        <module>cli</module>
+        <!-- <module>cli</module> -->
         <module>asm</module>
-        <module>docs</module>
+        <!-- <module>docs</module> -->
         <module>instr</module>
         <module>compiler</module>
         <module>maven-plugin</module>
-        <module>samples</module>
+        <!-- <module>samples</module> -->
         <module>agent</module>
         <module>boot</module>
         <module>extensions</module>
@@ -50,7 +61,7 @@
         <module>extensions/profiling</module>
         <module>extensions/export</module>
         <!--<module>dist</module>-->
-        <module>jps-api</module>
+        <!-- <module>jps-api</module> -->
     </modules>
     <distributionManagement>
         <snapshotRepository>
@@ -108,13 +119,13 @@
                 </dependencies>
             </plugin>
             <plugin>
-                <inherited>false</inherited>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <tagNameFormat>v@{project.version}</tagNameFormat>
-                </configuration>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-release-plugin</artifactId>
+              <version>2.4</version>
+              <configuration>
+                <autoVersionSubmodules>true</autoVersionSubmodules>
+                <pushChanges>true</pushChanges>
+              </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

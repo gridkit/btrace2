@@ -9,7 +9,7 @@
     <name>Instrumentation</name>
 
     <parent>
-        <groupId>net.java.btrace</groupId>
+        <groupId>org.gridkit.3rd.btrace</groupId>
         <artifactId>btrace-parent</artifactId>
         <relativePath>../btrace-parent</relativePath>
         <version>2.0-nimble-SNAPSHOT</version>
@@ -26,7 +26,7 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>net.java.btrace</groupId>
+                <groupId>org.gridkit.3rd.btrace</groupId>
                 <artifactId>maven-plugin</artifactId>
                 <version>${project.version}</version>
                 <executions>

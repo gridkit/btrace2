@@ -3,12 +3,12 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>net.java.btrace</groupId>
+        <groupId>org.gridkit.3rd.btrace</groupId>
         <artifactId>btrace-parent</artifactId>
         <relativePath>../btrace-parent</relativePath>
         <version>2.0-nimble-SNAPSHOT</version>
     </parent>
-    <groupId>net.java.btrace</groupId>
+    <groupId>org.gridkit.3rd.btrace</groupId>
     <artifactId>jps-api</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>JPS API</name>
