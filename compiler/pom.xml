@@ -1,6 +1,5 @@
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>compiler</artifactId>
@@ -11,7 +10,7 @@
         <groupId>org.gridkit.3rd.btrace</groupId>
         <artifactId>btrace-parent</artifactId>
         <relativePath>../btrace-parent</relativePath>
-        <version>2.0-nimble-SNAPSHOT</version>
+        <version>2.0.1-nimble</version>
     </parent>
     <description>
         BTrace script compiler
@@ -54,7 +53,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>asm</artifactId>
-            <version>5.0</version>
+            <version>2.0.1-nimble</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
